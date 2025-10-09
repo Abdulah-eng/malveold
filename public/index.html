@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi‑Purpose Sales & Delivery Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M4 12L16 4L28 12V20C28 26 16 30 16 30C16 30 4 26 4 20V12Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 14L14 18L22 10" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Example</span>
+                </div>
+                <nav class="nav-menu">
+                    <div class="nav-item dropdown">
+                        Platform <span class="arrow">▼</span>
+                    </div>
+                    <div class="nav-item dropdown">
+                        Use Cases <span class="arrow">▼</span>
+                    </div>
+                    <a href="#" class="nav-item">Pricing</a>
+                    <a href="#" class="nav-item">Login</a>
+                    <a href="#" class="nav-item">Contact Us</a>
+                </nav>
+                <div class="nav-actions">
+                    <button class="btn-primary">Start For Free →</button>
+                    <div class="language-selector">
+                        🌐 en <span class="arrow">▼</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">POST. DELIVER. GET PAID.</h1>
+            <p class="hero-subtitle">One marketplace where sellers list items and drivers earn on every delivery.</p>
+            <button class="btn-cta">Start Delivering ↗</button>
+        </div>
+        <div class="hero-video">
+            <div class="video-overlay">
+                <button class="play-btn">▶</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- In The News Section -->
+    <section class="news-section">
+        <div class="container">
+            <h2 class="section-title">IN THE <span class="highlight">NEWS</span></h2>
+            <p class="news-quote" id="newsQuote">Multi‑purpose marketplace where sellers post items and drivers get paid to deliver.</p>
+            <div class="news-logos" id="newsLogos">
+                <!-- Sellers -->
+                <button class="news-logo active" data-quote="Multi‑purpose marketplace where sellers post items and drivers get paid to deliver.">
+                    <svg width="140" height="56" viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg" aria-label="Sellers">
+                        <rect x="1" y="1" width="138" height="54" rx="10" fill="#1E1E1E" stroke="#2B2B2B"/>
+                        <circle cx="28" cy="28" r="10" fill="#4A90E2"/>
+                        <path d="M24 28h8M28 24v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                        <text x="56" y="34" fill="#CFCFCF" font-size="16" font-family="Inter, Arial">Sellers</text>
+                    </svg>
+                </button>
+                <!-- Drivers -->
+                <button class="news-logo" data-quote="Drivers accept jobs nearby and get paid fast for every delivery.">
+                    <svg width="140" height="56" viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg" aria-label="Drivers">
+                        <rect x="1" y="1" width="138" height="54" rx="10" fill="#1E1E1E" stroke="#2B2B2B"/>
+                        <rect x="20" y="22" width="24" height="12" rx="6" fill="#00D4AA"/>
+                        <text x="56" y="34" fill="#CFCFCF" font-size="16" font-family="Inter, Arial">Drivers</text>
+                    </svg>
+                </button>
+                <!-- Marketplace -->
+                <button class="news-logo" data-quote="One platform for products across categories—buy, sell, and deliver in minutes.">
+                    <svg width="140" height="56" viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg" aria-label="Marketplace">
+                        <rect x="1" y="1" width="138" height="54" rx="10" fill="#1E1E1E" stroke="#2B2B2B"/>
+                        <rect x="20" y="18" width="24" height="20" rx="4" fill="#FF8A00"/>
+                        <text x="56" y="34" fill="#CFCFCF" font-size="16" font-family="Inter, Arial">Market</text>
+                    </svg>
+                </button>
+                <!-- Payments -->
+                <button class="news-logo" data-quote="Secure, fast payments—earnings for drivers and payouts for sellers.">
+                    <svg width="140" height="56" viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg" aria-label="Payments">
+                        <rect x="1" y="1" width="138" height="54" rx="10" fill="#1E1E1E" stroke="#2B2B2B"/>
+                        <rect x="18" y="20" width="28" height="16" rx="4" fill="#7FFF00"/>
+                        <text x="56" y="34" fill="#CFCFCF" font-size="16" font-family="Inter, Arial">Payments</text>
+                    </svg>
+                </button>
+                <!-- Tracking -->
+                <button class="news-logo" data-quote="Live tracking and notifications from pickup to drop‑off.">
+                    <svg width="140" height="56" viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg" aria-label="Tracking">
+                        <rect x="1" y="1" width="138" height="54" rx="10" fill="#1E1E1E" stroke="#2B2B2B"/>
+                        <path d="M18 36c6-8 12-8 18 0" stroke="#4A90E2" stroke-width="3" fill="none"/>
+                        <text x="56" y="34" fill="#CFCFCF" font-size="16" font-family="Inter, Arial">Tracking</text>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fast Delivery Section -->
+    <section class="fast-delivery">
+        <div class="container">
+            <div class="content-wrapper">
+                <div class="text-content">
+                    <h2 class="section-title">FAST DELIVERY SELLS.<br>ARE YOU READY?</h2>
+                    <p class="section-subtitle">Shoppers rank same‑day delivery as a top reason to buy again.</p>
+                </div>
+                <div class="info-box">
+                    <p>Launch a city‑wide marketplace where local items move from cart to door in minutes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Showcase Section -->
+    <section class="product-showcase">
+        <div class="container">
+            <div class="showcase-wrapper">
+                <div class="tablet-mockup">
+                    <div class="screen-content">
+                        <!-- Food ordering interface mockup -->
+                        <div class="order-interface">
+                            <img src="https://via.placeholder.com/800x600/f8f8f8/333?text=Food+Ordering+Interface" alt="Food Ordering Interface">
+                        </div>
+                    </div>
+                </div>
+                <div class="feature-cards" id="featureCards">
+                    <div class="feature-card active">
+                        <div class="feature-progress"></div>
+                        <h3>Mobile‑first Ordering</h3>
+                        <p>Seamless shopping for customers and simple listing for sellers—anywhere.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-progress"></div>
+                        <h3>End‑to‑End Marketplace</h3>
+                        <p>From listing to pickup to proof‑of‑delivery—managed in one place.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-progress"></div>
+                        <h3>Clean, Trusted Experience</h3>
+                        <p>Modern UX that converts browsers to buyers and keeps them coming back.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Stats Section -->
+    <section class="platform-stats">
+        <div class="container">
+            <h2 class="section-title">Delivering in Minutes.<br>Powered by your marketplace.</h2>
+            <p class="section-subtitle">Thousands of items. One network. Sellers list—drivers deliver.</p>
+            <div class="partner-logos">
+                <div class="logo-row">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=SUBWAY" alt="Subway">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=CURRY+CAB" alt="Curry Cab">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=JustNow" alt="JustNow">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=HURRYLO" alt="Hurrylo">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=Pizza+Co" alt="Pizza">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=Papasee" alt="Papasee">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=FOODKAB" alt="FoodKab">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=Arabia" alt="Arabia">
+                </div>
+                <div class="logo-row">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=OnlineKaka" alt="OnlineKaka">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=HOMEMADE" alt="Homemade">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=SotoEats" alt="SotoEats">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=NOMI" alt="Nomi">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=GoBear" alt="GoBear">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=BOTTLE" alt="Bottle">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=Tasweb" alt="Tasweb">
+                    <img src="https://via.placeholder.com/120x60/fff/333?text=foodagui" alt="Foodagui">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile App Section -->
+    <section class="mobile-app">
+        <div class="container">
+            <div class="app-wrapper">
+                <div class="app-content">
+                    <span class="badge">● SHOP & ORDER</span>
+                    <h2 class="section-title">Designed to turn listings into completed deliveries</h2>
+                    <p class="section-subtitle">Simple browsing, fast checkout, and live updates from pickup to drop‑off.</p>
+                    <button class="btn-dark">Explore App</button>
+                </div>
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <video id="appVideo" src="video1.mp4" muted></video>
+                    </div>
+                </div>
+                <div class="feature-list">
+                    <div class="feature-item" data-video="location">Location‑based seller discovery</div>
+                    <div class="feature-item" data-video="multivendor">Multi‑seller marketplace support</div>
+                    <div class="feature-item" data-video="ar">Product options & add‑ons (AR preview ready)</div>
+                    <div class="feature-item" data-video="delivery">Delivery or pickup with coupon support</div>
+                    <div class="feature-item" data-video="payment">Secure online payments: Stripe, PayPal & more</div>
+                    <div class="feature-item" data-video="tracking">Live order tracking for customers</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Panel Section -->
+    <section class="admin-panel">
+        <div class="container">
+            <div class="admin-wrapper">
+                <div class="admin-content">
+                    <span class="badge">● ADMIN PANEL</span>
+                    <h2 class="section-title">A bird's‑eye view of your marketplace</h2>
+                    <p class="section-subtitle">Control listings, orders, payouts, and teams from one powerful dashboard.</p>
+                    <div class="admin-features">
+                        <div class="feature-tab active" data-tab="infrastructure">
+                            <div class="progress-line"></div>
+                            <p>Catalog & Listings Control</p>
+                        </div>
+                        <div class="feature-tab" data-tab="analytics">
+                            <div class="progress-line"></div>
+                            <p>Analytics, Payouts & Order Reports</p>
+                        </div>
+                        <div class="feature-tab" data-tab="realtime">
+                            <div class="progress-line"></div>
+                            <p>Real‑time Order Routing & Support</p>
+                        </div>
+                        <div class="feature-tab" data-tab="multiuser">
+                            <div class="progress-line"></div>
+                            <p>Team Access & Permission Control</p>
+                        </div>
+                    </div>
+                    <button class="btn-dark">Explore Panel</button>
+                </div>
+                <div class="admin-preview">
+                    <img id="adminImage" src="https://via.placeholder.com/600x400/f0f0f0/333?text=Infrastructure+Control" alt="Admin Panel">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Delivery Partners Section -->
+    <section class="delivery-partners">
+        <div class="container">
+            <div class="partners-wrapper">
+                <div class="partners-content">
+                    <h2 class="section-title">Deliver before they change their mind.</h2>
+                    <p class="section-subtitle">Connect your marketplace to leading delivery partners or your own driver fleet.</p>
+                </div>
+                <div class="partners-showcase">
+                    <div class="order-card">
+                        <div class="order-details">
+                            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-label="iPhone" role="img">
+                                <rect width="60" height="60" rx="8" fill="#333"/>
+                                <text x="50%" y="55%" fill="#fff" font-size="12" text-anchor="middle" font-family="Inter, Arial">iPhone</text>
+                            </svg>
+                            <div>
+                                <h4>iPhone 16 Pro</h4>
+                                <p>#2753</p>
+                            </div>
+                            <p>TechNest</p>
+                            <p>Henry Wilson</p>
+                            <p>$952</p>
+                            <span class="delivery-status">⚡ Delivered in 22m</span>
+                        </div>
+                    </div>
+                    <div class="partner-icons">
+                        <div class="partner-icon" data-partner="elephant">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="E partner">
+                                <rect width="80" height="40" rx="6" fill="#4A90E2"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="18" text-anchor="middle" font-family="Inter, Arial">E</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon" data-partner="ship">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ship">
+                                <rect width="80" height="40" rx="6" fill="#333"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="14" text-anchor="middle" font-family="Inter, Arial">Ship</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon" data-partner="uber">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Uber">
+                                <rect width="80" height="40" rx="6" fill="#000"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="14" text-anchor="middle" font-family="Inter, Arial">Uber</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon" data-partner="stuart">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Stuart">
+                                <rect width="80" height="40" rx="6" fill="#00D4AA"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="12" text-anchor="middle" font-family="Inter, Arial">Stuart</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon" data-partner="autozod">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A">
+                                <rect width="80" height="40" rx="6" fill="#333"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="16" text-anchor="middle" font-family="Inter, Arial">A</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon" data-partner="porter">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Porter">
+                                <rect width="80" height="40" rx="6" fill="#333"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="12" text-anchor="middle" font-family="Inter, Arial">Porter</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon active" data-partner="doordash">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DD">
+                                <rect width="80" height="40" rx="6" fill="#FF3008"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="14" text-anchor="middle" font-family="Inter, Arial">DD</text>
+                            </svg>
+                        </div>
+                        <div class="partner-icon" data-partner="lyft">
+                            <svg width="80" height="40" viewBox="0 0 80 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lyft">
+                                <rect width="80" height="40" rx="6" fill="#FF00BF"/>
+                                <text x="50%" y="60%" fill="#fff" font-size="14" text-anchor="middle" font-family="Inter, Arial">Lyft</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="tracking-preview">
+                        <div class="tracking-steps">
+                            <div class="step completed">Seller</div>
+                            <div class="step completed">Picked</div>
+                            <div class="step active">En‑route</div>
+                            <div class="step">Delivered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Loved by sellers, drivers, and customers</h2>
+            <p class="section-subtitle">Proven reliability at scale for multi‑seller, on‑demand delivery.</p>
+            <div class="testimonial-carousel">
+                <div class="testimonial-card active">
+                    <img src="https://via.placeholder.com/400x300/E74C3C/fff?text=Chef" alt="Oliver">
+                    <div class="testimonial-content">
+                        <blockquote>
+                            <p>Our sellers list products in seconds and our drivers pick up jobs instantly. The result is faster deliveries and higher repeat purchases.</p>
+                            <p>The dashboard unifies orders, payouts, and tracking so our team can focus on growth—not juggling tools.</p>
+                        </blockquote>
+                        <div class="author">
+                            <h4>Oliver Portocarrero</h4>
+                            <p>Founder at The Cheesy One Pizza</p>
+                        </div>
+                        <img class="logo" src="https://via.placeholder.com/80x80/fff/333?text=Pizza" alt="Pizza Logo">
+                    </div>
+                </div>
+                <div class="testimonial-nav">
+                    <button class="nav-btn prev">←</button>
+                    <button class="nav-btn next">→</button>
+                </div>
+                <div class="testimonial-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Reviews Section -->
+    <section class="customer-reviews">
+        <div class="container">
+            <h2 class="section-title">TRUSTED. LOVED. APPROVED.</h2>
+            <div class="reviews-wrapper">
+                <div class="reviews-track">
+                    <div class="review-card">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>We launched our marketplace in days. Sellers list easily, and deliveries are fast—customers love the experience.</p>
+                        <div class="reviewer">
+                            <h4>Ali Hasan</h4>
+                            <p>United States</p>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>The platform is intuitive. Our drivers get paid on time and our support team can track every order in real‑time.</p>
+                        <div class="reviewer">
+                            <h4>Priyanka</h4>
+                            <p>Canada</p>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>Exactly what we needed to run a multi‑seller marketplace with delivery. Simple to manage, loved by our users.</p>
+                        <div class="reviewer">
+                            <h4>Dominique</h4>
+                            <p>United States</p>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>Fantastic support. Any questions are handled quickly, and new sellers onboard smoothly.</p>
+                        <div class="reviewer">
+                            <h4>Jaron</h4>
+                            <p>United States</p>
+                        </div>
+                    </div>
+                    <!-- Duplicate cards for continuous scroll -->
+                    <div class="review-card">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>Great service and an excellent app. Prices are the best and they are very communicative and helpful. I will definitely recommend them to everyone for app development.</p>
+                        <div class="reviewer">
+                            <h4>Ali Hasan</h4>
+                            <p>United States</p>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <p>The team was great and really accommodating with the time and design. All the website and app interface was really easy to use. Highly recommended, if you are looking to create an app for Delivery!</p>
+                        <div class="reviewer">
+                            <h4>Priyanka</h4>
+                            <p>Canada</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Start your 14‑day free trial</h2>
+            <p class="cta-subtitle">No payment information required.</p>
+            <button class="btn-primary large">Start For Free</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <h3>Your multi‑seller sales & delivery catalyst</h3>
+                </div>
+                <div class="footer-logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M4 12L16 4L28 12V20C28 26 16 30 16 30C16 30 4 26 4 20V12Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 14L14 18L22 10" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>company</span>
+                </div>
+            </div>
+            <div class="footer-social">
+                <a href="#" class="social-link">📱 LinkedIn ↗</a>
+                <a href="#" class="social-link">📷 Instagram ↗</a>
+                <a href="#" class="social-link">🐦 Twitter ↗</a>
+                <a href="#" class="social-link">📘 Facebook ↗</a>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>PRODUCTS</h4>
+                    <a href="#">Buyer App</a>
+                    <a href="#">Marketplace Website</a>
+                    <a href="#">Merchant Application</a>
+                    <a href="#">Driver Application</a>
+                    <a href="#">Admin Panel</a>
+                </div>
+                <div class="footer-column">
+                    <h4>RESOURCE</h4>
+                    <a href="#">Blog</a>
+                    <a href="#">User Guide</a>
+                </div>
+                <div class="footer-column">
+                    <h4>COMPANY</h4>
+                    <a href="#">Pricing</a>
+                    <a href="#">About the Platform</a>
+                    <a href="#">Contact Support</a>
+                    <a href="#">Partner Program</a>
+                </div>
+                <div class="footer-column">
+                    <h4>LEGAL</h4>
+                    <a href="#">Cookie Policy</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Refund Policy</a>
+                    <a href="#">Terms & Conditions</a>
+                    <a href="#">Cookie Preferences</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
