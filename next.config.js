@@ -10,14 +10,15 @@ const nextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/',
-        destination: '/index.html'
-      }
-    ];
-  }
+  experimental: {
+    optimizePackageImports: ['@heroicons/react', 'lucide-react'],
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
 };
 
 module.exports = nextConfig;
