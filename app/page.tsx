@@ -7,7 +7,7 @@ import { useStore } from '../lib/store'
 import { 
   MagnifyingGlassIcon,
   TruckIcon,
-  StoreIcon,
+  BuildingStorefrontIcon,
   ShieldCheckIcon,
   ClockIcon,
   StarIcon,
@@ -148,7 +148,7 @@ export default function HomePage() {
 
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <StoreIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <BuildingStorefrontIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
               <p className="text-gray-500">Try adjusting your search or browse different categories</p>
             </div>
