@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useAuth } from '../lib/auth-context'
 import { useStore } from '../lib/store'
 import { 
   MagnifyingGlassIcon,
@@ -22,7 +23,12 @@ import toast from 'react-hot-toast'
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { products, addToCart, user } = useStore()
+  const { user } = useAuth()
+  const { products, addToCart, loadProducts, loading } = useStore()
+
+  useEffect(() => {
+    loadProducts()
+  }, [loadProducts])
 
   const categories = [
     { id: 'all', name: 'All Categories', icon: '🛍️' },
@@ -65,8 +71,12 @@ export default function HomePage() {
     return matchesSearch && matchesCategory
   })
 
-  const handleAddToCart = (product: any) => {
-    addToCart(product, 1)
+  const handleAddToCart = async (product: any) => {
+    if (!user) {
+      toast.error('Please sign in to add items to cart')
+      return
+    }
+    await addToCart(product, 1)
     toast.success('Added to cart!')
   }
 
@@ -146,7 +156,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">Loading products...</h3>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12">
               <BuildingStorefrontIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">No products found</h3>

@@ -1,6 +1,19 @@
 import { create } from 'zustand'
-import { sampleProducts } from './sample-data'
 import { User, Product, CartItem, Order } from './types'
+import { 
+  getProducts, 
+  addToCart as addToCartDB, 
+  removeFromCart as removeFromCartDB, 
+  updateCartItem,
+  clearCart as clearCartDB,
+  getCartItems,
+  getOrders,
+  createOrder as createOrderDB,
+  updateOrderStatus as updateOrderStatusDB,
+  createProduct as addProductDB,
+  updateProduct as updateProductDB,
+  deleteProduct as deleteProductDB
+} from './database-client'
 
 interface AppState {
   user: User | null
@@ -8,18 +21,22 @@ interface AppState {
   orders: Order[]
   products: Product[]
   isAuthenticated: boolean
+  loading: boolean
   
   // Actions
   setUser: (user: User | null) => void
-  addToCart: (product: Product, quantity: number) => void
-  removeFromCart: (productId: string) => void
-  updateCartQuantity: (productId: string, quantity: number) => void
-  clearCart: () => void
-  addOrder: (order: Order) => void
-  updateOrderStatus: (orderId: string, status: Order['status']) => void
-  addProduct: (product: Product) => void
-  updateProduct: (productId: string, updates: Partial<Product>) => void
-  deleteProduct: (productId: string) => void
+  loadProducts: () => Promise<void>
+  loadCart: (userId: string) => Promise<void>
+  loadOrders: (userId: string) => Promise<void>
+  addToCart: (product: Product, quantity: number) => Promise<void>
+  removeFromCart: (productId: string) => Promise<void>
+  updateCartQuantity: (productId: string, quantity: number) => Promise<void>
+  clearCart: () => Promise<void>
+  addOrder: (order: Omit<Order, 'id' | 'createdAt'>) => Promise<void>
+  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>
+  addProduct: (product: Omit<Product, 'id' | 'createdAt'>) => Promise<void>
+  updateProduct: (productId: string, updates: Partial<Product>) => Promise<void>
+  deleteProduct: (productId: string) => Promise<void>
   logout: () => void
 }
 
@@ -27,83 +44,141 @@ export const useStore = create<AppState>()((set, get) => ({
       user: null,
       cart: [],
       orders: [],
-      products: sampleProducts,
+      products: [],
       isAuthenticated: false,
+      loading: false,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       
-      addToCart: (product, quantity) => {
-        const { cart } = get()
-        const existingItem = cart.find(item => item.product.id === product.id)
+      loadProducts: async () => {
+        set({ loading: true })
+        try {
+          const products = await getProducts()
+          set({ products, loading: false })
+        } catch (error) {
+          console.error('Error loading products:', error)
+          set({ loading: false })
+        }
+      },
+      
+      loadCart: async (userId) => {
+        try {
+          const cartItems = await getCartItems(userId)
+          set({ cart: cartItems })
+        } catch (error) {
+          console.error('Error loading cart:', error)
+        }
+      },
+      
+      loadOrders: async (userId) => {
+        try {
+          const orders = await getOrders(userId)
+          set({ orders })
+        } catch (error) {
+          console.error('Error loading orders:', error)
+        }
+      },
+      
+      addToCart: async (product, quantity) => {
+        const { user } = get()
+        if (!user) return
         
-        if (existingItem) {
-          set({
-            cart: cart.map(item =>
-              item.product.id === product.id
-                ? { ...item, quantity: item.quantity + quantity }
-                : item
-            )
-          })
-        } else {
-          set({ cart: [...cart, { product, quantity }] })
+        try {
+          await addToCartDB(user.id, product.id, quantity)
+          await get().loadCart(user.id)
+        } catch (error) {
+          console.error('Error adding to cart:', error)
         }
       },
       
-      removeFromCart: (productId) => {
-        const { cart } = get()
-        set({ cart: cart.filter(item => item.product.id !== productId) })
-      },
-      
-      updateCartQuantity: (productId, quantity) => {
-        const { cart } = get()
-        if (quantity <= 0) {
-          set({ cart: cart.filter(item => item.product.id !== productId) })
-        } else {
-          set({
-            cart: cart.map(item =>
-              item.product.id === productId
-                ? { ...item, quantity }
-                : item
-            )
-          })
+      removeFromCart: async (productId) => {
+        const { user } = get()
+        if (!user) return
+        
+        try {
+          await removeFromCartDB(user.id, productId)
+          await get().loadCart(user.id)
+        } catch (error) {
+          console.error('Error removing from cart:', error)
         }
       },
       
-      clearCart: () => set({ cart: [] }),
-      
-      addOrder: (order) => {
-        const { orders } = get()
-        set({ orders: [...orders, order] })
+      updateCartQuantity: async (productId, quantity) => {
+        const { user } = get()
+        if (!user) return
+        
+        try {
+          await updateCartItem(user.id, productId, quantity)
+          await get().loadCart(user.id)
+        } catch (error) {
+          console.error('Error updating cart quantity:', error)
+        }
       },
       
-      updateOrderStatus: (orderId, status) => {
-        const { orders } = get()
-        set({
-          orders: orders.map(order =>
-            order.id === orderId ? { ...order, status } : order
-          )
-        })
+      clearCart: async () => {
+        const { user } = get()
+        if (!user) return
+        
+        try {
+          await clearCartDB(user.id)
+          set({ cart: [] })
+        } catch (error) {
+          console.error('Error clearing cart:', error)
+        }
       },
       
-      addProduct: (product) => {
-        const { products } = get()
-        set({ products: [...products, product] })
+      addOrder: async (order) => {
+        const { user } = get()
+        if (!user) return
+        
+        try {
+          await createOrderDB(order)
+          await get().loadOrders(user.id)
+          await get().clearCart()
+        } catch (error) {
+          console.error('Error creating order:', error)
+        }
       },
       
-      updateProduct: (productId, updates) => {
-        const { products } = get()
-        set({
-          products: products.map(product =>
-            product.id === productId ? { ...product, ...updates } : product
-          )
-        })
+      updateOrderStatus: async (orderId, status) => {
+        try {
+          await updateOrderStatusDB(orderId, status)
+          const { user } = get()
+          if (user) {
+            await get().loadOrders(user.id)
+          }
+        } catch (error) {
+          console.error('Error updating order status:', error)
+        }
       },
       
-      deleteProduct: (productId) => {
-        const { products } = get()
-        set({ products: products.filter(product => product.id !== productId) })
+      addProduct: async (product) => {
+        try {
+          await addProductDB(product)
+          await get().loadProducts()
+        } catch (error) {
+          console.error('Error adding product:', error)
+        }
       },
       
-      logout: () => set({ user: null, isAuthenticated: false, cart: [] }),
+      updateProduct: async (productId, updates) => {
+        try {
+          await updateProductDB(productId, updates)
+          await get().loadProducts()
+        } catch (error) {
+          console.error('Error updating product:', error)
+        }
+      },
+      
+      deleteProduct: async (productId) => {
+        try {
+          await deleteProductDB(productId)
+          await get().loadProducts()
+        } catch (error) {
+          console.error('Error deleting product:', error)
+        }
+      },
+      
+      logout: () => set({ user: null, isAuthenticated: false, cart: [], orders: [] }),
     })
 )

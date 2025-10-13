@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '../../lib/auth-context'
 import { useStore } from '../../lib/store'
 import { 
   TrashIcon,
@@ -17,19 +18,26 @@ import toast from 'react-hot-toast'
 
 export default function CartPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
-  const { cart, updateCartQuantity, removeFromCart, clearCart, addOrder, user } = useStore()
+  const { user } = useAuth()
+  const { cart, updateCartQuantity, removeFromCart, clearCart, addOrder, loadCart } = useStore()
   const router = useRouter()
+
+  useEffect(() => {
+    if (user) {
+      loadCart(user.id)
+    }
+  }, [user, loadCart])
 
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
   const deliveryFee = subtotal > 50 ? 0 : 5.99
   const tax = subtotal * 0.08
   const total = subtotal + deliveryFee + tax
 
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
+  const handleQuantityChange = async (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId)
+      await removeFromCart(productId)
     } else {
-      updateCartQuantity(productId, newQuantity)
+      await updateCartQuantity(productId, newQuantity)
     }
   }
 
@@ -53,19 +61,16 @@ export default function CartPage() {
       
       // Create order
       const order = {
-        id: generateId(),
         buyerId: user.id,
         sellerId: cart[0].product.sellerId, // Assuming all items from same seller
         items: [...cart],
         total,
         status: 'pending' as const,
         deliveryAddress: user.address || '123 Main St, City, State',
-        createdAt: new Date().toISOString(),
         estimatedDelivery: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // 2 hours from now
       }
 
-      addOrder(order)
-      clearCart()
+      await addOrder(order)
       toast.success('Order placed successfully!')
       router.push('/orders')
     } catch (error) {

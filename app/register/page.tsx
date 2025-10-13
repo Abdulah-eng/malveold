@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useAuth } from '../../lib/auth-context'
 import { useStore } from '../../lib/store'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
@@ -21,7 +22,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { setUser } = useStore()
+  const { signUp } = useAuth()
+  const { setUser, loadProducts, loadCart, loadOrders } = useStore()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,22 +37,20 @@ export default function RegisterPage() {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock user data - in real app, this would come from API
-      const mockUser = {
-        id: '1',
+      const { error } = await signUp(formData.email, formData.password, {
         name: formData.name,
-        email: formData.email,
         role: formData.role,
         phone: formData.phone,
         address: formData.address
+      })
+      
+      if (error) {
+        toast.error(error.message || 'Registration failed. Please try again.')
+        return
       }
       
-      setUser(mockUser)
-      toast.success('Registration successful!')
-      router.push('/')
+      toast.success('Registration successful! Please check your email to verify your account.')
+      router.push('/login')
     } catch (error) {
       toast.error('Registration failed. Please try again.')
     } finally {

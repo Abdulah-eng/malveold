@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useAuth } from '../../lib/auth-context'
 import { useStore } from '../../lib/store'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
@@ -15,7 +16,8 @@ export default function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { setUser } = useStore()
+  const { signIn } = useAuth()
+  const { setUser, loadProducts, loadCart, loadOrders } = useStore()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,20 +25,13 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { error } = await signIn(formData.email, formData.password)
       
-      // Mock user data - in real app, this would come from API
-      const mockUser = {
-        id: '1',
-        name: 'John Doe',
-        email: formData.email,
-        role: 'buyer' as const,
-        phone: '+1234567890',
-        address: '123 Main St, City, State'
+      if (error) {
+        toast.error(error.message || 'Login failed. Please try again.')
+        return
       }
       
-      setUser(mockUser)
       toast.success('Login successful!')
       router.push('/')
     } catch (error) {

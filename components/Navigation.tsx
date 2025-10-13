@@ -1,14 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useAuth } from '../lib/auth-context'
 import { useStore } from '../lib/store'
 import { formatPrice } from '../lib/utils'
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user, cart, isAuthenticated, logout } = useStore()
+  const { user, loading, signOut } = useAuth()
+  const { cart, loadCart, loadProducts } = useStore()
+  const isAuthenticated = !!user
+
+  useEffect(() => {
+    if (user) {
+      loadCart(user.id)
+      loadProducts()
+    }
+  }, [user, loadCart, loadProducts])
   
   const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
   const cartItems = cart.reduce((sum, item) => sum + item.quantity, 0)
@@ -85,7 +95,7 @@ export default function Navigation() {
                     My Orders
                   </Link>
                   <button
-                    onClick={logout}
+                    onClick={signOut}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Sign Out

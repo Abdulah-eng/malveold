@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useAuth } from '../../lib/auth-context'
 import { useStore } from '../../lib/store'
 import { 
   EyeIcon,
@@ -17,7 +18,14 @@ import { formatPrice, formatDate, getOrderStatusColor, getOrderStatusText } from
 
 export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
-  const { user, orders } = useStore()
+  const { user } = useAuth()
+  const { orders, loadOrders } = useStore()
+
+  useEffect(() => {
+    if (user) {
+      loadOrders(user.id)
+    }
+  }, [user, loadOrders])
 
   const userOrders = orders.filter(order => order.buyerId === user?.id)
   const activeOrders = userOrders.filter(order => 
