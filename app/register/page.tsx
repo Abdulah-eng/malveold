@@ -37,12 +37,23 @@ export default function RegisterPage() {
     }
 
     try {
-      const { error } = await signUp(formData.email, formData.password, {
-        name: formData.name,
-        role: formData.role,
-        phone: formData.phone,
-        address: formData.address
+      // Route through API to avoid any client env issues
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          data: {
+            name: formData.name,
+            role: formData.role,
+            phone: formData.phone,
+            address: formData.address
+          }
+        })
       })
+      const body = await res.json().catch(() => ({}))
+      const error = res.ok ? null : new Error(body.error || 'Registration failed')
       
       if (error) {
         toast.error(error.message || 'Registration failed. Please try again.')

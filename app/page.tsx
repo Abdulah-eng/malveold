@@ -24,7 +24,14 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const { user } = useAuth()
-  const { products, addToCart, loadProducts, loading } = useStore()
+  const { products, addToCart, loadProducts, loading, setUser: setStoreUser } = useStore()
+
+  // Sync AuthContext user to Store user
+  useEffect(() => {
+    if (user) {
+      setStoreUser(user)
+    }
+  }, [user, setStoreUser])
 
   useEffect(() => {
     loadProducts()
@@ -72,10 +79,12 @@ export default function HomePage() {
   })
 
   const handleAddToCart = async (product: any) => {
+    console.log('Add to cart clicked, user:', user)
     if (!user) {
       toast.error('Please sign in to add items to cart')
       return
     }
+    console.log('Calling addToCart with product:', product.id)
     await addToCart(product, 1)
     toast.success('Added to cart!')
   }

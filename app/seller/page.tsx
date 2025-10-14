@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useStore } from '../../lib/store'
+import { useAuth } from '../../lib/auth-context'
 import { 
   PlusIcon,
   PencilIcon,
@@ -27,16 +28,24 @@ export default function SellerDashboard() {
     stock: '',
     image: ''
   })
-  const { user, products, addProduct, updateProduct, deleteProduct, orders } = useStore()
+  const { user: authUser } = useAuth()
+  const { user, products, addProduct, updateProduct, deleteProduct, orders, updateOrderStatus, loadOrders, loadProducts } = useStore()
 
-  const sellerProducts = products.filter(p => p.sellerId === user?.id)
-  const sellerOrders = orders.filter(o => o.sellerId === user?.id)
+  useEffect(() => {
+    if (authUser) {
+      loadProducts()
+      loadOrders(authUser.id)
+    }
+  }, [authUser, loadProducts, loadOrders])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const sellerProducts = products.filter(p => p.sellerId === (user?.id || authUser?.id))
+  const sellerOrders = orders.filter(o => o.sellerId === (user?.id || authUser?.id))
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (editingProduct) {
-      updateProduct(editingProduct.id, {
+      await updateProduct(editingProduct.id, {
         name: productForm.name,
         description: productForm.description,
         price: parseFloat(productForm.price),
@@ -47,20 +56,20 @@ export default function SellerDashboard() {
       toast.success('Product updated successfully!')
     } else {
       const newProduct = {
-        id: generateId(),
         name: productForm.name,
         description: productForm.description,
         price: parseFloat(productForm.price),
         category: productForm.category,
         stock: parseInt(productForm.stock),
-        image: productForm.image || '/placeholder-product.jpg',
-        sellerId: user?.id || '',
-        sellerName: user?.name || '',
+        image: productForm.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=300&fit=crop',
+        sellerId: (user?.id || authUser?.id) || '',
+        sellerName: (user?.name || authUser?.name) || '',
         rating: 0,
         reviews: 0,
-        createdAt: new Date().toISOString()
       }
-      addProduct(newProduct)
+      console.log('Adding product:', newProduct)
+      await addProduct(newProduct)
+      console.log('Product added')
       toast.success('Product added successfully!')
     }
     
@@ -260,6 +269,9 @@ export default function SellerDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -285,6 +297,41 @@ export default function SellerDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={() => {
+                              updateOrderStatus(order.id, 'confirmed')
+                              toast.success('Order confirmed!')
+                            }}
+                            className="btn btn-primary text-xs py-1"
+                          >
+                            Confirm
+                          </button>
+                        )}
+                        {order.status === 'confirmed' && (
+                          <button
+                            onClick={() => {
+                              updateOrderStatus(order.id, 'preparing')
+                              toast.success('Order marked as preparing')
+                            }}
+                            className="btn btn-primary text-xs py-1"
+                          >
+                            Prepare
+                          </button>
+                        )}
+                        {order.status === 'preparing' && (
+                          <button
+                            onClick={() => {
+                              updateOrderStatus(order.id, 'ready')
+                              toast.success('Order ready for pickup!')
+                            }}
+                            className="btn btn-primary text-xs py-1"
+                          >
+                            Mark Ready
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

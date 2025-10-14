@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null
   supabaseUser: SupabaseUser | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
+  signIn: (email: string, password: string) => Promise<{ error: any, user?: User | null }>
   signUp: (email: string, password: string, userData: { name: string; role: string; phone?: string; address?: string }) => Promise<{ error: any }>
   signOut: () => Promise<void>
   updateProfile: (updates: Partial<User>) => Promise<{ error: any }>
@@ -24,46 +24,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient()
-    
-    // Get initial session
+    // Get initial session on page load
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setSupabaseUser(session.user)
-        const profile = await getUserProfile(session.user.id)
-        setUser(profile)
+      console.log('Checking for existing session...')
+      
+      // Try to fetch session from API route which has access to cookies
+      try {
+        const res = await fetch('/api/auth/session')
+        if (res.ok) {
+          const data = await res.json()
+          console.log('Session API returned:', data)
+          if (data.profile) {
+            setUser(data.profile)
+            setSupabaseUser(data.user || null)
+            console.log('Loaded user from session:', data.profile)
+          }
+        }
+      } catch (err) {
+        console.error('Session check error:', err)
       }
+      
       setLoading(false)
     }
 
     getInitialSession()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setSupabaseUser(session.user)
-          const profile = await getUserProfile(session.user.id)
-          setUser(profile)
-        } else {
-          setSupabaseUser(null)
-          setUser(null)
-        }
-        setLoading(false)
-      }
-    )
-
-    return () => subscription.unsubscribe()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error }
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      
+      console.log('API login response status:', res.status)
+      
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        return { error: new Error(body.error || 'Login failed') }
+      }
+
+      const body = await res.json()
+      console.log('Login API returned:', body)
+      
+      const profile = body.profile as User
+      console.log('Setting user state to:', profile)
+      
+      setSupabaseUser(body.user)
+      setUser(profile)
+
+      return { error: null, user: profile }
+    } catch (err: any) {
+      console.error('signIn error:', err)
+      return { error: err }
+    }
   }
 
   const signUp = async (email: string, password: string, userData: { name: string; role: string; phone?: string; address?: string }) => {
@@ -84,8 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      setUser(null)
+      setSupabaseUser(null)
+      window.location.href = '/login'
+    } catch (err) {
+      console.error('Sign out error:', err)
+    }
   }
 
   const updateProfile = async (updates: Partial<User>) => {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useAuth } from '../../lib/auth-context'
 import { useStore } from '../../lib/store'
 import { 
   UserIcon,
@@ -22,15 +23,19 @@ export default function ProfilePage() {
     phone: '',
     address: '',
   })
+  const { user: authUser } = useAuth()
   const { user, setUser } = useStore()
+  
+  // Use authUser from AuthContext as the source of truth
+  const currentUser = authUser || user
 
   const handleEdit = () => {
-    if (user) {
+    if (currentUser) {
       setFormData({
-        name: user.name,
-        email: user.email,
-        phone: user.phone || '',
-        address: user.address || '',
+        name: currentUser.name,
+        email: currentUser.email,
+        phone: currentUser.phone || '',
+        address: currentUser.address || '',
       })
     }
     setIsEditing(true)
@@ -62,7 +67,7 @@ export default function ProfilePage() {
     })
   }
 
-  if (!user) {
+  if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -93,25 +98,25 @@ export default function ProfilePage() {
                 <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <UserIcon className="h-12 w-12 text-primary-600" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
-                <p className="text-gray-600 capitalize">{user.role}</p>
+                <h2 className="text-xl font-semibold text-gray-900">{currentUser.name}</h2>
+                <p className="text-gray-600 capitalize">{currentUser.role}</p>
               </div>
               
               <div className="space-y-2 text-sm text-gray-600">
                 <div className="flex items-center justify-center space-x-2">
                   <EnvelopeIcon className="h-4 w-4" />
-                  <span>{user.email}</span>
+                  <span>{currentUser.email}</span>
                 </div>
-                {user.phone && (
+                {currentUser.phone && (
                   <div className="flex items-center justify-center space-x-2">
                     <PhoneIcon className="h-4 w-4" />
-                    <span>{user.phone}</span>
+                    <span>{currentUser.phone}</span>
                   </div>
                 )}
-                {user.address && (
+                {currentUser.address && (
                   <div className="flex items-center justify-center space-x-2">
                     <MapPinIcon className="h-4 w-4" />
-                    <span className="text-center">{user.address}</span>
+                    <span className="text-center">{currentUser.address}</span>
                   </div>
                 )}
               </div>
@@ -165,7 +170,7 @@ export default function ProfilePage() {
                       className="input"
                     />
                   ) : (
-                    <p className="text-gray-900 py-2">{user.name}</p>
+                    <p className="text-gray-900 py-2">{currentUser.name}</p>
                   )}
                 </div>
 
@@ -182,7 +187,7 @@ export default function ProfilePage() {
                       className="input"
                     />
                   ) : (
-                    <p className="text-gray-900 py-2">{user.email}</p>
+                    <p className="text-gray-900 py-2">{currentUser.email}</p>
                   )}
                 </div>
 
@@ -200,7 +205,7 @@ export default function ProfilePage() {
                       placeholder="Enter your phone number"
                     />
                   ) : (
-                    <p className="text-gray-900 py-2">{user.phone || 'Not provided'}</p>
+                    <p className="text-gray-900 py-2">{currentUser.phone || 'Not provided'}</p>
                   )}
                 </div>
 
@@ -218,7 +223,7 @@ export default function ProfilePage() {
                       placeholder="Enter your address"
                     />
                   ) : (
-                    <p className="text-gray-900 py-2">{user.address || 'Not provided'}</p>
+                    <p className="text-gray-900 py-2">{currentUser.address || 'Not provided'}</p>
                   )}
                 </div>
 
@@ -228,11 +233,11 @@ export default function ProfilePage() {
                   </label>
                   <div className="flex items-center space-x-2">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      user.role === 'buyer' ? 'bg-blue-100 text-blue-800' :
-                      user.role === 'seller' ? 'bg-green-100 text-green-800' :
+                      currentUser.role === 'buyer' ? 'bg-blue-100 text-blue-800' :
+                      currentUser.role === 'seller' ? 'bg-green-100 text-green-800' :
                       'bg-purple-100 text-purple-800'
                     }`}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
                     </span>
                   </div>
                 </div>

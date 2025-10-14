@@ -18,9 +18,19 @@ import toast from 'react-hot-toast'
 
 export default function CartPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const { user } = useAuth()
   const { cart, updateCartQuantity, removeFromCart, clearCart, addOrder, loadCart } = useStore()
   const router = useRouter()
+
+  useEffect(() => {
+    if (user) {
+      setDeliveryAddress(user.address || '')
+      setPhoneNumber(user.phone || '')
+    }
+  }, [user])
 
   useEffect(() => {
     if (user) {
@@ -41,7 +51,7 @@ export default function CartPage() {
     }
   }
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!user) {
       toast.error('Please sign in to continue')
       router.push('/login')
@@ -53,24 +63,36 @@ export default function CartPage() {
       return
     }
 
+    setShowCheckoutModal(true)
+  }
+
+  const handlePlaceOrder = async () => {
+    if (!deliveryAddress.trim()) {
+      toast.error('Please enter a delivery address')
+      return
+    }
+
+    if (!phoneNumber.trim()) {
+      toast.error('Please enter a phone number')
+      return
+    }
+
     setIsCheckingOut(true)
 
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
       // Create order
       const order = {
-        buyerId: user.id,
+        buyerId: user!.id,
         sellerId: cart[0].product.sellerId, // Assuming all items from same seller
         items: [...cart],
         total,
         status: 'pending' as const,
-        deliveryAddress: user.address || '123 Main St, City, State',
+        deliveryAddress: deliveryAddress.trim(),
         estimatedDelivery: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // 2 hours from now
       }
 
       await addOrder(order)
+      setShowCheckoutModal(false)
       toast.success('Order placed successfully!')
       router.push('/orders')
     } catch (error) {
@@ -221,7 +243,7 @@ export default function CartPage() {
                 disabled={isCheckingOut}
                 className="w-full btn btn-primary mt-6 py-3"
               >
-                {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
+                Proceed to Checkout
               </button>
 
               <div className="mt-4 text-center">
@@ -233,6 +255,87 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      {showCheckoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Delivery Information</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Delivery Address *
+                  </label>
+                  <textarea
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    className="input h-24 resize-none"
+                    placeholder="Enter your complete delivery address"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="input"
+                    placeholder="Enter your phone number"
+                    required
+                  />
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">Order Summary</h4>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Items ({cart.length})</span>
+                      <span>{formatPrice(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Delivery Fee</span>
+                      <span>{deliveryFee === 0 ? 'Free' : formatPrice(deliveryFee)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tax</span>
+                      <span>{formatPrice(tax)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-base pt-2 border-t">
+                      <span>Total</span>
+                      <span>{formatPrice(total)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCheckoutModal(false)}
+                    className="flex-1 btn btn-outline"
+                    disabled={isCheckingOut}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePlaceOrder}
+                    className="flex-1 btn btn-primary"
+                    disabled={isCheckingOut}
+                  >
+                    {isCheckingOut ? 'Placing Order...' : 'Place Order'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

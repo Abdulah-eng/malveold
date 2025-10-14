@@ -18,13 +18,14 @@ import toast from 'react-hot-toast'
 export default function DriverDashboard() {
   const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
-  const { user, orders, updateOrderStatus } = useStore()
+  const { user, orders, availableOrders, loadOrders, loadAvailableOrders, updateOrderStatus, claimOrder } = useStore()
 
   // Get available orders (not assigned to any driver)
-  const availableOrders = orders.filter(order => 
-    !order.driverId && 
-    ['confirmed', 'preparing', 'ready'].includes(order.status)
-  )
+  useEffect(() => {
+    if (!user) return
+    loadOrders(user.id)
+    loadAvailableOrders()
+  }, [user, loadOrders, loadAvailableOrders])
 
   // Get driver's assigned orders
   const driverOrders = orders.filter(order => 
@@ -57,22 +58,28 @@ export default function DriverDashboard() {
     }
   }, [])
 
-  const handleAcceptOrder = (orderId: string) => {
-    updateOrderStatus(orderId, 'picked_up')
+  const handleAcceptOrder = async (orderId: string) => {
+    if (!user) {
+      toast.error('Please sign in first')
+      return
+    }
+    await claimOrder(orderId)
     toast.success('Order accepted! Navigate to pickup location.')
+    setSelectedOrder(null)
   }
 
-  const handleStartDelivery = (orderId: string) => {
-    updateOrderStatus(orderId, 'picked_up')
+  const handleStartDelivery = async (orderId: string) => {
+    await updateOrderStatus(orderId, 'picked_up')
     toast.success('Delivery started! Customer will be notified.')
   }
 
-  const handleCompleteDelivery = (orderId: string) => {
-    updateOrderStatus(orderId, 'delivered')
+  const handleCompleteDelivery = async (orderId: string) => {
+    await updateOrderStatus(orderId, 'delivered')
     toast.success('Delivery completed! Payment will be processed.')
   }
 
   const handleRejectOrder = (orderId: string) => {
+    setSelectedOrder(null)
     toast.error('Order rejected')
   }
 
@@ -220,6 +227,14 @@ export default function DriverDashboard() {
                       <span>{order.deliveryAddress}</span>
                     </div>
                     
+                    {order.status === 'ready' && (
+                      <button
+                        onClick={() => handleStartDelivery(order.id)}
+                        className="w-full btn btn-primary text-sm"
+                      >
+                        Start Delivery
+                      </button>
+                    )}
                     {order.status === 'picked_up' && (
                       <div className="flex space-x-2">
                         <button

@@ -45,7 +45,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 2. Copy and paste the contents of `supabase/migrations/001_initial_schema.sql`
 3. Click **Run** to execute the schema creation
 4. Copy and paste the contents of `supabase/migrations/002_sample_data.sql`
-5. Click **Run** to insert sample data
+5. Click **Run** to insert sample data (this now creates auth users first and relies on the trigger to create matching profiles)
 
 ## Step 5: Configure Authentication
 
@@ -161,6 +161,8 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 # Optional: For production deployment
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
+
+You can copy these into a new file named `.env.local` in `malveold/`.
 
 ## Database Schema Overview
 

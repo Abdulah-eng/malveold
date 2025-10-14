@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -16,7 +16,7 @@ export default function LoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, user } = useAuth()
   const { setUser, loadProducts, loadCart, loadOrders } = useStore()
   const router = useRouter()
 
@@ -25,21 +25,46 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await signIn(formData.email, formData.password)
+      const result = await signIn(formData.email, formData.password)
+      console.log('signIn result in login page:', result)
       
-      if (error) {
-        toast.error(error.message || 'Login failed. Please try again.')
+      if (result.error) {
+        setIsLoading(false)
+        toast.error(result.error.message || 'Login failed. Please try again.')
         return
       }
       
       toast.success('Login successful!')
-      router.push('/')
-    } catch (error) {
-      toast.error('Login failed. Please try again.')
-    } finally {
+      
+      // Give state time to update before redirect
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       setIsLoading(false)
+      
+      // Role-based redirect
+      const target = result.user?.role === 'seller' ? '/seller' 
+                   : result.user?.role === 'driver' ? '/driver' 
+                   : '/'
+      
+      console.log('Redirecting to:', target)
+      window.location.href = target
+    } catch (error: any) {
+      setIsLoading(false)
+      toast.error('Login failed. Please try again.')
     }
   }
+
+  // If already authenticated, immediately redirect by role
+  useEffect(() => {
+    if (!user) return
+    if (user.role === 'seller') {
+      router.replace('/seller')
+    } else if (user.role === 'driver') {
+      router.replace('/driver')
+    } else {
+      router.replace('/')
+    }
+  }, [user, router])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

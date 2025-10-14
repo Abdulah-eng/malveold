@@ -8,8 +8,10 @@ import {
   clearCart as clearCartDB,
   getCartItems,
   getOrders,
+  getAvailableOrdersForDriver,
   createOrder as createOrderDB,
   updateOrderStatus as updateOrderStatusDB,
+  assignDriverToOrder,
   createProduct as addProductDB,
   updateProduct as updateProductDB,
   deleteProduct as deleteProductDB
@@ -19,6 +21,7 @@ interface AppState {
   user: User | null
   cart: CartItem[]
   orders: Order[]
+  availableOrders: Order[]
   products: Product[]
   isAuthenticated: boolean
   loading: boolean
@@ -28,6 +31,7 @@ interface AppState {
   loadProducts: () => Promise<void>
   loadCart: (userId: string) => Promise<void>
   loadOrders: (userId: string) => Promise<void>
+  loadAvailableOrders: () => Promise<void>
   addToCart: (product: Product, quantity: number) => Promise<void>
   removeFromCart: (productId: string) => Promise<void>
   updateCartQuantity: (productId: string, quantity: number) => Promise<void>
@@ -44,6 +48,7 @@ export const useStore = create<AppState>()((set, get) => ({
       user: null,
       cart: [],
       orders: [],
+      availableOrders: [],
       products: [],
       isAuthenticated: false,
       loading: false,
@@ -78,13 +83,28 @@ export const useStore = create<AppState>()((set, get) => ({
           console.error('Error loading orders:', error)
         }
       },
+
+      loadAvailableOrders: async () => {
+        try {
+          const orders = await getAvailableOrdersForDriver()
+          set({ availableOrders: orders })
+        } catch (error) {
+          console.error('Error loading available orders:', error)
+        }
+      },
       
       addToCart: async (product, quantity) => {
         const { user } = get()
-        if (!user) return
+        console.log('Store addToCart, user from store:', user)
+        if (!user) {
+          console.error('No user in store state')
+          return
+        }
         
         try {
+          console.log('Calling addToCartDB')
           await addToCartDB(user.id, product.id, quantity)
+          console.log('addToCartDB complete, loading cart')
           await get().loadCart(user.id)
         } catch (error) {
           console.error('Error adding to cart:', error)
@@ -147,8 +167,23 @@ export const useStore = create<AppState>()((set, get) => ({
           if (user) {
             await get().loadOrders(user.id)
           }
+          // Refresh available list too
+          await get().loadAvailableOrders()
         } catch (error) {
           console.error('Error updating order status:', error)
+        }
+      },
+
+      // Driver claims an order
+      claimOrder: async (orderId: string) => {
+        const { user } = get()
+        if (!user) return
+        try {
+          await assignDriverToOrder(orderId, user.id)
+          await get().loadOrders(user.id)
+          await get().loadAvailableOrders()
+        } catch (error) {
+          console.error('Error claiming order:', error)
         }
       },
       
