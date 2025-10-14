@@ -322,7 +322,7 @@ export const getAvailableOrdersForDriver = async (): Promise<Order[]> => {
       )
     `)
     .is('driver_id', null)
-    .in('status', ['confirmed', 'preparing', 'ready'])
+    .in('status', ['pending', 'confirmed', 'preparing', 'ready'])
     .order('created_at', { ascending: false })
 
   if (error) {
