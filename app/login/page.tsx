@@ -44,6 +44,7 @@ export default function LoginPage() {
       // Role-based redirect
       const target = result.user?.role === 'seller' ? '/seller' 
                    : result.user?.role === 'driver' ? '/driver' 
+                   : result.user?.role === 'admin' ? '/admin'
                    : '/'
       
       console.log('Redirecting to:', target)
@@ -61,6 +62,8 @@ export default function LoginPage() {
       router.replace('/seller')
     } else if (user.role === 'driver') {
       router.replace('/driver')
+    } else if (user.role === 'admin') {
+      router.replace('/admin')
     } else {
       router.replace('/')
     }
