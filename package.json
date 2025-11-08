@@ -6,10 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "setup-supabase": "node scripts/setup-supabase.js"
+    "setup-supabase": "node scripts/setup-supabase.js",
+    "create-test-users": "node scripts/create-test-users.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "@stripe/react-stripe-js": "^5.3.0",
+    "@stripe/stripe-js": "^8.3.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.75.0",
@@ -25,6 +28,7 @@
     "react-dom": "18.3.1",
     "react-hook-form": "^7.45.4",
     "react-hot-toast": "^2.4.1",
+    "stripe": "^19.3.0",
     "tailwindcss": "^3.3.0",
     "zustand": "^4.5.7"
   },

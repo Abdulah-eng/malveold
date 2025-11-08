@@ -75,7 +75,8 @@ export default function HomePage() {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const hasStock = product.stock > 0 // Only show products with stock > 0
+    return matchesSearch && matchesCategory && hasStock
   })
 
   const handleAddToCart = async (product: any) => {

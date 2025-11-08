@@ -43,4 +43,40 @@ export interface Order {
     lat: number
     lng: number
   }
+  buyerPhone?: string
+  buyerName?: string
+  buyerEmail?: string
+  orderPhoneNumber?: string // Phone number provided during checkout
+  sellerAddress?: string
+  sellerPhone?: string
+  deliveryCharge?: number // Delivery charge applied to the order
+  driverCommission?: number // Fixed driver commission for the order
+  paymentStatus?: 'pending' | 'processing' | 'paid' | 'failed' | 'refunded'
+  stripePaymentIntentId?: string
+}
+
+export interface Earnings {
+  id: string
+  userId: string
+  userRole: 'seller' | 'driver'
+  orderId: string
+  amount: number
+  status: 'pending' | 'available' | 'withdrawn'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WithdrawalRequest {
+  id: string
+  userId: string
+  userRole: 'seller' | 'driver'
+  amount: number
+  status: 'pending' | 'approved' | 'rejected' | 'paid'
+  adminNotes?: string
+  createdAt: string
+  updatedAt: string
+  processedAt?: string
+  processedBy?: string
+  userName?: string
+  userEmail?: string
 }

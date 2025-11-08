@@ -37,7 +37,8 @@ export default function ProductsPage() {
                          product.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
-    return matchesSearch && matchesCategory && matchesPrice
+    const hasStock = product.stock > 0 // Only show products with stock > 0
+    return matchesSearch && matchesCategory && matchesPrice && hasStock
   })
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {

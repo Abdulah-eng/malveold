@@ -11,10 +11,21 @@ import {
   PlusIcon,
   MinusIcon,
   ShoppingBagIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  CreditCardIcon
 } from '@heroicons/react/24/outline'
 import { formatPrice, generateId } from '../../lib/utils'
 import toast from 'react-hot-toast'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements } from '@stripe/react-stripe-js'
+import CheckoutForm from '../../components/CheckoutForm'
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
+
+// Check if Stripe key is configured
+if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  console.warn('⚠️ Stripe publishable key is not configured. Please add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to your .env.local file')
+}
 
 export default function CartPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
@@ -38,9 +49,37 @@ export default function CartPage() {
     }
   }, [user, loadCart])
 
+  const [taxPercentage, setTaxPercentage] = useState<number>(8)
+  const [deliveryCharge, setDeliveryCharge] = useState<number>(5.99)
+  const [driverCommissionFixed, setDriverCommissionFixed] = useState<number>(5.00)
+
+  useEffect(() => {
+    // Load settings from database
+    const loadSettings = async () => {
+      try {
+        const { getBuyerTaxPercentage, getDeliveryCharge, getDriverCommissionFixed } = await import('../../lib/database-client')
+        const [tax, delivery, commission] = await Promise.all([
+          getBuyerTaxPercentage(),
+          getDeliveryCharge(),
+          getDriverCommissionFixed()
+        ])
+        setTaxPercentage(tax)
+        setDeliveryCharge(delivery)
+        setDriverCommissionFixed(commission)
+      } catch (error) {
+        console.error('Error loading settings:', error)
+        // Use defaults if settings can't be loaded
+        setTaxPercentage(8)
+        setDeliveryCharge(5.99)
+        setDriverCommissionFixed(5.00)
+      }
+    }
+    loadSettings()
+  }, [])
+
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const deliveryFee = subtotal > 50 ? 0 : 5.99
-  const tax = subtotal * 0.08
+  const deliveryFee = deliveryCharge
+  const tax = subtotal * (taxPercentage / 100)
   const total = subtotal + deliveryFee + tax
 
   const handleQuantityChange = async (productId: string, newQuantity: number) => {
@@ -66,39 +105,16 @@ export default function CartPage() {
     setShowCheckoutModal(true)
   }
 
-  const handlePlaceOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      toast.error('Please enter a delivery address')
-      return
-    }
-
-    if (!phoneNumber.trim()) {
-      toast.error('Please enter a phone number')
-      return
-    }
-
-    setIsCheckingOut(true)
-
+  const handlePaymentSuccess = async () => {
     try {
-      // Create order
-      const order = {
-        buyerId: user!.id,
-        sellerId: cart[0].product.sellerId, // Assuming all items from same seller
-        items: [...cart],
-        total,
-        status: 'pending' as const,
-        deliveryAddress: deliveryAddress.trim(),
-        estimatedDelivery: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // 2 hours from now
+      // Reload orders and clear cart
+      if (user) {
+        await loadCart(user.id)
       }
-
-      await addOrder(order)
       setShowCheckoutModal(false)
-      toast.success('Order placed successfully!')
       router.push('/orders')
     } catch (error) {
-      toast.error('Checkout failed. Please try again.')
-    } finally {
-      setIsCheckingOut(false)
+      console.error('Error after payment success:', error)
     }
   }
 
@@ -230,13 +246,6 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {subtotal < 50 && (
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    Add {formatPrice(50 - subtotal)} more for free delivery!
-                  </p>
-                </div>
-              )}
 
               <button
                 onClick={handleCheckout}
@@ -256,82 +265,42 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Checkout Modal */}
-      {showCheckoutModal && (
+      {/* Checkout Modal with Stripe */}
+      {showCheckoutModal && user && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Delivery Information</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Delivery Address *
-                  </label>
-                  <textarea
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    className="input h-24 resize-none"
-                    placeholder="Enter your complete delivery address"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="input"
-                    placeholder="Enter your phone number"
-                    required
-                  />
-                </div>
-
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Order Summary</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Items ({cart.length})</span>
-                      <span>{formatPrice(subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Delivery Fee</span>
-                      <span>{deliveryFee === 0 ? 'Free' : formatPrice(deliveryFee)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Tax</span>
-                      <span>{formatPrice(tax)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-base pt-2 border-t">
-                      <span>Total</span>
-                      <span>{formatPrice(total)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCheckoutModal(false)}
-                    className="flex-1 btn btn-outline"
-                    disabled={isCheckingOut}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handlePlaceOrder}
-                    className="flex-1 btn btn-primary"
-                    disabled={isCheckingOut}
-                  >
-                    {isCheckingOut ? 'Placing Order...' : 'Place Order'}
-                  </button>
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Checkout</h3>
+                <button
+                  onClick={() => setShowCheckoutModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={isCheckingOut}
+                >
+                  ✕
+                </button>
               </div>
+              
+              <Elements stripe={stripePromise}>
+                <CheckoutForm
+                  total={total}
+                  subtotal={subtotal}
+                  deliveryFee={deliveryFee}
+                  tax={tax}
+                  cartLength={cart.length}
+                  deliveryAddress={deliveryAddress}
+                  phoneNumber={phoneNumber}
+                  onSuccess={handlePaymentSuccess}
+                  onCancel={() => setShowCheckoutModal(false)}
+                  isProcessing={isCheckingOut}
+                  setIsProcessing={setIsCheckingOut}
+                  userId={user.id}
+                  cart={cart}
+                  driverCommissionFixed={driverCommissionFixed}
+                  onDeliveryAddressChange={setDeliveryAddress}
+                  onPhoneNumberChange={setPhoneNumber}
+                />
+              </Elements>
             </div>
           </div>
         </div>

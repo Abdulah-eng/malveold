@@ -14,7 +14,7 @@ import {
   XCircleIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline'
-import { formatPrice, formatDate, getOrderStatusColor, getOrderStatusText } from '../../lib/utils'
+import { formatPrice, formatDate, getOrderStatusColor, getOrderStatusText, getOrderProgressPercentage } from '../../lib/utils'
 
 export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
@@ -27,11 +27,24 @@ export default function OrdersPage() {
     }
   }, [user, loadOrders])
 
+  // Refresh orders periodically to see status updates
+  useEffect(() => {
+    if (!user) return
+    
+    const interval = setInterval(() => {
+      loadOrders(user.id)
+    }, 5000) // Refresh every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [user, loadOrders])
+
   const userOrders = orders.filter(order => order.buyerId === user?.id)
   const activeOrders = userOrders.filter(order => 
     ['pending', 'confirmed', 'preparing', 'ready', 'picked_up'].includes(order.status)
   )
-  const completedOrders = userOrders.filter(order => order.status === 'delivered')
+  const completedOrders = userOrders.filter(order => 
+    order.status === 'delivered' || order.status === 'cancelled'
+  )
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -186,12 +199,7 @@ export default function OrdersPage() {
                       <div 
                         className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                         style={{
-                          width: order.status === 'pending' ? '16%' :
-                                 order.status === 'confirmed' ? '33%' :
-                                 order.status === 'preparing' ? '50%' :
-                                 order.status === 'ready' ? '66%' :
-                                 order.status === 'picked_up' ? '83%' :
-                                 order.status === 'delivered' ? '100%' : '0%'
+                          width: `${getOrderProgressPercentage(order.status)}%`
                         }}
                       />
                     </div>
@@ -211,15 +219,26 @@ export default function OrdersPage() {
                 <div key={order.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      {getStatusIcon(order.status)}
                       <div>
                         <h3 className="font-semibold">Order #{order.id.slice(-6)}</h3>
-                        <p className="text-sm text-gray-600">Delivered on {formatDate(order.createdAt)}</p>
+                        <p className="text-sm text-gray-600">
+                          {order.status === 'delivered' 
+                            ? `Delivered on ${formatDate(order.createdAt)}`
+                            : order.status === 'cancelled'
+                            ? `Cancelled on ${formatDate(order.createdAt)}`
+                            : formatDate(order.createdAt)}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-primary-600">
                         {formatPrice(order.total)}
+                      </div>
+                      <div className="mt-1">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getOrderStatusColor(order.status)}`}>
+                          {getOrderStatusText(order.status)}
+                        </span>
                       </div>
                       <button
                         onClick={() => setSelectedOrder(order)}
@@ -319,6 +338,31 @@ export default function OrdersPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* Order Breakdown */}
+                {(selectedOrder.deliveryCharge !== undefined) && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-3">Order Breakdown</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Subtotal:</span>
+                        <span className="font-medium">
+                          {formatPrice(selectedOrder.items.reduce((sum: number, item: any) => sum + (item.product.price * item.quantity), 0))}
+                        </span>
+                      </div>
+                      {selectedOrder.deliveryCharge !== undefined && selectedOrder.deliveryCharge > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Delivery Charge:</span>
+                          <span className="font-medium">{formatPrice(selectedOrder.deliveryCharge)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between pt-2 border-t">
+                        <span className="text-gray-900 font-semibold">Total:</span>
+                        <span className="font-bold text-lg">{formatPrice(selectedOrder.total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tracking */}
                 {selectedOrder.status === 'picked_up' && (

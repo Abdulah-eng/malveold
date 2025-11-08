@@ -85,3 +85,24 @@ export function getOrderStatusText(status: string): string {
       return 'Unknown'
   }
 }
+
+export function getOrderProgressPercentage(status: string): number {
+  switch (status) {
+    case 'pending':
+      return 16 // ~1/6
+    case 'confirmed':
+      return 33 // ~2/6
+    case 'preparing':
+      return 50 // ~3/6
+    case 'ready':
+      return 66 // ~4/6
+    case 'picked_up':
+      return 83 // ~5/6
+    case 'delivered':
+      return 100
+    case 'cancelled':
+      return 0
+    default:
+      return 0
+  }
+}

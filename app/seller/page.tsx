@@ -14,8 +14,9 @@ import {
   ShoppingBagIcon,
   TruckIcon
 } from '@heroicons/react/24/outline'
-import { formatPrice, generateId } from '../../lib/utils'
+import { formatPrice, generateId, getOrderProgressPercentage, getOrderStatusText } from '../../lib/utils'
 import toast from 'react-hot-toast'
+import { getEarnings, createWithdrawalRequest } from '../../lib/database-client'
 
 export default function SellerDashboard() {
   const [showAddProduct, setShowAddProduct] = useState(false)
@@ -30,13 +31,63 @@ export default function SellerDashboard() {
   })
   const { user: authUser } = useAuth()
   const { user, products, addProduct, updateProduct, deleteProduct, orders, updateOrderStatus, loadOrders, loadProducts } = useStore()
+  const [earnings, setEarnings] = useState<{ available: number; pending: number; withdrawn: number }>({ available: 0, pending: 0, withdrawn: 0 })
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
+  const [withdrawalAmount, setWithdrawalAmount] = useState('')
 
   useEffect(() => {
     if (authUser) {
       loadProducts()
       loadOrders(authUser.id)
+      loadEarnings()
     }
   }, [authUser, loadProducts, loadOrders])
+
+  const loadEarnings = async () => {
+    if (!authUser) return
+    try {
+      const earningsData = await getEarnings(authUser.id)
+      setEarnings(earningsData)
+    } catch (error) {
+      console.error('Error loading earnings:', error)
+    }
+  }
+
+  const handleWithdrawalRequest = async () => {
+    if (!authUser) return
+    
+    const amount = parseFloat(withdrawalAmount)
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid amount')
+      return
+    }
+
+    if (amount > earnings.available) {
+      toast.error('Insufficient earnings')
+      return
+    }
+
+    try {
+      await createWithdrawalRequest(authUser.id, 'seller', amount)
+      toast.success('Withdrawal request submitted successfully!')
+      setShowWithdrawalModal(false)
+      setWithdrawalAmount('')
+      await loadEarnings()
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create withdrawal request')
+    }
+  }
+
+  // Refresh orders periodically to see driver assignments
+  useEffect(() => {
+    if (!authUser) return
+    
+    const interval = setInterval(() => {
+      loadOrders(authUser.id)
+    }, 5000) // Refresh every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [authUser, loadOrders])
 
   const sellerProducts = products.filter(p => p.sellerId === (user?.id || authUser?.id))
   const sellerOrders = orders.filter(o => o.sellerId === (user?.id || authUser?.id))
@@ -168,6 +219,34 @@ export default function SellerDashboard() {
           </div>
         </div>
 
+        {/* Earnings Section */}
+        <div className="card p-6 mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">My Earnings</h2>
+            <button
+              onClick={() => setShowWithdrawalModal(true)}
+              disabled={earnings.available <= 0}
+              className="btn btn-primary"
+            >
+              Request Withdrawal
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-gray-600">Available</p>
+              <p className="text-2xl font-bold text-green-600">{formatPrice(earnings.available)}</p>
+            </div>
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-gray-600">Pending Withdrawal</p>
+              <p className="text-2xl font-bold text-yellow-600">{formatPrice(earnings.pending)}</p>
+            </div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm font-medium text-gray-600">Total Withdrawn</p>
+              <p className="text-2xl font-bold text-blue-600">{formatPrice(earnings.withdrawn)}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Products Section */}
         <div className="card p-6 mb-8">
           <div className="flex justify-between items-center mb-6">
@@ -250,93 +329,145 @@ export default function SellerDashboard() {
               <p className="text-gray-500">No orders yet</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Order ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sellerOrders.slice(0, 10).map((order) => (
-                    <tr key={order.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        #{order.id.slice(-6)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Customer
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatPrice(order.total)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div className="space-y-4">
+              {sellerOrders.slice(0, 10).map((order) => (
+                <div key={order.id} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div>
+                        <h3 className="font-semibold">Order #{order.id.slice(-6)}</h3>
+                        <p className="text-sm text-gray-600">
+                          {order.items.length} item{order.items.length !== 1 ? 's' : ''} • {formatPrice(order.total)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                        order.status === 'preparing' ? 'bg-orange-100 text-orange-800' :
+                        order.status === 'ready' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {getOrderStatusText(order.status)}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">
                         {new Date(order.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.status === 'pending' && (
-                          <button
-                            onClick={() => {
-                              updateOrderStatus(order.id, 'confirmed')
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                      <span>Pending</span>
+                      <span>Confirmed</span>
+                      <span>Preparing</span>
+                      <span>Ready</span>
+                      <span>Picked Up</span>
+                      <span>Delivered</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${getOrderProgressPercentage(order.status)}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mt-4 flex justify-end space-x-2">
+                    {order.status === 'pending' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const success = await updateOrderStatus(order.id, 'confirmed')
+                            if (success) {
                               toast.success('Order confirmed!')
-                            }}
-                            className="btn btn-primary text-xs py-1"
-                          >
-                            Confirm
-                          </button>
-                        )}
-                        {order.status === 'confirmed' && (
-                          <button
-                            onClick={() => {
-                              updateOrderStatus(order.id, 'preparing')
+                              // Reload orders to reflect the change
+                              if (authUser) {
+                                await loadOrders(authUser.id)
+                              }
+                            } else {
+                              toast.error('Failed to confirm order. Please try again.')
+                            }
+                          } catch (error) {
+                            console.error('Error confirming order:', error)
+                            toast.error('Failed to confirm order. Please try again.')
+                          }
+                        }}
+                        className="btn btn-primary text-sm"
+                      >
+                        Confirm Order
+                      </button>
+                    )}
+                    {order.status === 'confirmed' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const success = await updateOrderStatus(order.id, 'preparing')
+                            if (success) {
                               toast.success('Order marked as preparing')
-                            }}
-                            className="btn btn-primary text-xs py-1"
-                          >
-                            Prepare
-                          </button>
-                        )}
-                        {order.status === 'preparing' && (
-                          <button
-                            onClick={() => {
-                              updateOrderStatus(order.id, 'ready')
+                              if (authUser) {
+                                await loadOrders(authUser.id)
+                              }
+                            } else {
+                              toast.error('Failed to update order. Please try again.')
+                            }
+                          } catch (error) {
+                            console.error('Error updating order:', error)
+                            toast.error('Failed to update order. Please try again.')
+                          }
+                        }}
+                        className="btn btn-primary text-sm"
+                      >
+                        Start Preparing
+                      </button>
+                    )}
+                    {order.status === 'preparing' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const success = await updateOrderStatus(order.id, 'ready')
+                            if (success) {
                               toast.success('Order ready for pickup!')
-                            }}
-                            className="btn btn-primary text-xs py-1"
-                          >
-                            Mark Ready
-                          </button>
+                              if (authUser) {
+                                await loadOrders(authUser.id)
+                              }
+                            } else {
+                              toast.error('Failed to mark order as ready. Please try again.')
+                            }
+                          } catch (error) {
+                            console.error('Error updating order:', error)
+                            toast.error('Failed to mark order as ready. Please try again.')
+                          }
+                        }}
+                        className="btn btn-primary text-sm"
+                      >
+                        Mark Ready for Pickup
+                      </button>
+                    )}
+                    {order.status === 'ready' && (
+                      <div className="flex items-center space-x-2">
+                        {order.driverId ? (
+                          <span className="text-sm text-green-600">✓ Driver assigned</span>
+                        ) : (
+                          <span className="text-sm text-gray-600">Waiting for driver to accept...</span>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    )}
+                    {order.status === 'picked_up' && (
+                      <span className="text-sm text-gray-600">Out for delivery</span>
+                    )}
+                    {order.status === 'delivered' && (
+                      <span className="text-sm text-green-600">✓ Delivered</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -471,6 +602,59 @@ export default function SellerDashboard() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdrawal Request Modal */}
+      {showWithdrawalModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Request Withdrawal</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Available Earnings
+                  </label>
+                  <p className="text-2xl font-bold text-green-600">{formatPrice(earnings.available)}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Withdrawal Amount *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={earnings.available}
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
+                    className="input"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowWithdrawalModal(false)
+                      setWithdrawalAmount('')
+                    }}
+                    className="flex-1 btn btn-outline"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleWithdrawalRequest}
+                    className="flex-1 btn btn-primary"
+                  >
+                    Submit Request
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

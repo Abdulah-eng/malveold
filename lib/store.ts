@@ -88,6 +88,7 @@ export const useStore = create<AppState>()((set, get) => ({
       loadAvailableOrders: async () => {
         try {
           const orders = await getAvailableOrdersForDriver()
+          console.log('Loaded available orders:', orders.length)
           set({ availableOrders: orders })
         } catch (error) {
           console.error('Error loading available orders:', error)
@@ -163,15 +164,21 @@ export const useStore = create<AppState>()((set, get) => ({
       
       updateOrderStatus: async (orderId, status) => {
         try {
-          await updateOrderStatusDB(orderId, status)
+          const success = await updateOrderStatusDB(orderId, status)
+          if (!success) {
+            console.error('Failed to update order status')
+            return false
+          }
           const { user } = get()
           if (user) {
             await get().loadOrders(user.id)
           }
           // Refresh available list too
           await get().loadAvailableOrders()
+          return true
         } catch (error) {
           console.error('Error updating order status:', error)
+          return false
         }
       },
 
