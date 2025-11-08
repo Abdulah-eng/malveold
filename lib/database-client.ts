@@ -390,9 +390,9 @@ export const getOrders = async (userId: string): Promise<Order[]> => {
   )
   
   if (ordersNeedingData.length > 0) {
-    const buyerIds = [...new Set(ordersNeedingData.map(o => o.buyerId))]
-    const sellerIds = [...new Set(ordersNeedingData.map(o => o.sellerId))]
-    const allUserIds = [...new Set([...buyerIds, ...sellerIds])]
+    const buyerIds = Array.from(new Set(ordersNeedingData.map(o => o.buyerId)))
+    const sellerIds = Array.from(new Set(ordersNeedingData.map(o => o.sellerId)))
+    const allUserIds = Array.from(new Set([...buyerIds, ...sellerIds]))
     
     const { data: userData } = await supabase
       .from('profiles')
@@ -479,9 +479,9 @@ export const getAvailableOrdersForDriver = async (): Promise<Order[]> => {
   )
   
   if (ordersNeedingData.length > 0) {
-    const buyerIds = [...new Set(ordersNeedingData.map(o => o.buyerId))]
-    const sellerIds = [...new Set(ordersNeedingData.map(o => o.sellerId))]
-    const allUserIds = [...new Set([...buyerIds, ...sellerIds])]
+    const buyerIds = Array.from(new Set(ordersNeedingData.map(o => o.buyerId)))
+    const sellerIds = Array.from(new Set(ordersNeedingData.map(o => o.sellerId)))
+    const allUserIds = Array.from(new Set([...buyerIds, ...sellerIds]))
     
     const { data: userData } = await supabase
       .from('profiles')

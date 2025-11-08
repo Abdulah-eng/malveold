@@ -37,7 +37,7 @@ interface AppState {
   updateCartQuantity: (productId: string, quantity: number) => Promise<void>
   clearCart: () => Promise<void>
   addOrder: (order: Omit<Order, 'id' | 'createdAt'>) => Promise<void>
-  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>
+  updateOrderStatus: (orderId: string, status: Order['status']) => Promise<boolean>
   claimOrder: (orderId: string) => Promise<void>
   addProduct: (product: Omit<Product, 'id' | 'createdAt'>) => Promise<void>
   updateProduct: (productId: string, updates: Partial<Product>) => Promise<void>

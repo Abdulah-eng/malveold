@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'orders' | 'products' | 'settings' | 'payments'>('dashboard')
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<(User & { createdAt?: string })[]>([])
   const [orders, setOrders] = useState<OrderWithDetails[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -161,11 +161,11 @@ export default function AdminDashboard() {
 
       // Get user details for orders
       const orderIds = data?.map(o => o.id) || []
-      const userIds = [...new Set([
+      const userIds = Array.from(new Set([
         ...(data?.map(o => o.buyer_id) || []),
         ...(data?.map(o => o.seller_id) || []),
         ...(data?.map(o => o.driver_id).filter(Boolean) || [])
-      ])]
+      ]))
 
       console.log('Fetching user data for', userIds.length, 'users')
 
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
             buyerName: userMap.get(order.buyer_id) || 'Unknown',
             sellerName: userMap.get(order.seller_id) || 'Unknown',
             driverName: order.driver_id ? userMap.get(order.driver_id) : undefined
-          }
+          } as OrderWithDetails
         } catch (error) {
           console.error('Error mapping order:', order.id, error)
           console.error('Order data:', order)
